@@ -1,0 +1,32 @@
+#cloud-config 
+chpasswd: #Change your local password here
+    list: |
+      ${user}:${password}
+    expire: false
+users:
+  - name: ${user}
+    gecos: ${user}
+    lock_passwd: false
+    groups: sudo, users, admin
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    ssh_authorized_keys:
+      - ${ssh_key}
+# The VM will initially come up with DHCP.  This overrides the existing netplan.
+write_files:
+  - path: /etc/netplan/50-cloud-init.yaml
+    content: |
+      network:
+        version: 2
+        ethernets:
+          ens192:
+            dhcp4: false
+            addresses:
+              - ${vm_ip}/${netmask}
+            gateway4: ${vm_gw}
+            nameservers:
+              addresses: [${dns}]
+runcmd:
+  - export DEBIAN_FRONTEND=noninteractive
+  - echo "reconfiguring network"
+  - netplan apply
