@@ -30,7 +30,7 @@ resource "vsphere_virtual_machine" "vm" {
   folder           = var.vsphere_folder
 
   num_cpus = var.vm_cpus
-  memory   = var.vm_mem
+  memory   = var.vm_ram
   guest_id = data.vsphere_virtual_machine.template.guest_id
 
   scsi_type = data.vsphere_virtual_machine.template.scsi_type
