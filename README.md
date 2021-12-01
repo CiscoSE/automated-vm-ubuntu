@@ -4,14 +4,17 @@
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
-No requirements.
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.0 |
+| <a name="requirement_vsphere"></a> [vsphere](#requirement\_vsphere) | >=2.0.2 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
 | <a name="provider_template"></a> [template](#provider\_template) | n/a |
-| <a name="provider_vsphere"></a> [vsphere](#provider\_vsphere) | n/a |
+| <a name="provider_vsphere"></a> [vsphere](#provider\_vsphere) | >=2.0.2 |
 
 ## Modules
 
@@ -61,4 +64,5 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_vm_ip_addr"></a> [vm\_ip\_addr](#output\_vm\_ip\_addr) | n/a |
+| <a name="output_vm_name"></a> [vm\_name](#output\_vm\_name) | n/a |
 <!-- END_TF_DOCS -->
