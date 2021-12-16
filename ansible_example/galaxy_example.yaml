@@ -1,0 +1,7 @@
+---
+# The following is an example of ansible galaxy collections to be used
+# by playbooks during provisioning
+collections:
+  - name: community.hashi_vault
+  - name: nginxinc.nginx_core
+    version: 0.3.0

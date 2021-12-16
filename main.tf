@@ -70,13 +70,69 @@ resource "vsphere_virtual_machine" "vm" {
       private_key = file(var.private_key)
     }
   }
-  provisioner "local-exec" {
-    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.vm_user} --private-key=${var.private_key} -i '${self.default_ip_address},' --become --extra-vars \"${var.ansible_vars}\"  ${var.playbook}"
+  # provisioner "local-exec" {
+  #   command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.vm_user} --private-key=${var.private_key} -i '${self.default_ip_address},' --become --extra-vars \"${var.ansible_vars}\"  ${var.playbook}"
+  #   connection {
+  #     host        = self.default_ip_address
+  #     type        = "ssh"
+  #     user        = var.vm_user
+  #     private_key = file(var.private_key)
+  #   }
+  # }
+
+  # The following provisioners are used when using a cloud-agent or to launch scripts directly on the instance
+  provisioner "remote-exec" {
+    inline = [
+      "sudo apt update",
+      "sudo apt install -y software-properties-common",
+      "sudo add-apt-repository --yes --update ppa:ansible/ansible",
+      "sudo apt install -y ansible",
+      "mkdir /home/${var.vm_user}/ansible"
+    ]
     connection {
-      host        = self.default_ip_address
-      type        = "ssh"
-      user        = var.vm_user
-      private_key = file(var.private_key)
+      host     = self.default_ip_address
+      type     = "ssh"
+      user     = var.vm_user
+      password = var.vm_password
+    }
+  }
+
+  # Copies ansible playbook for provisioning services to local directory on instance
+  provisioner "file" {
+    source      = var.playbook
+    destination = "/home/${var.vm_user}/${var.playbook}"
+    connection {
+      host     = self.default_ip_address
+      type     = "ssh"
+      user     = var.vm_user
+      password = var.vm_password
+    }
+  }
+
+  # Copies a yaml file declaring required ansible galaxy roles/collections required for playbook execution
+  provisioner "file" {
+    source      = "ansible/${var.vm_name}.yaml"
+    destination = "/home/${var.vm_user}/ansible/${var.vm_name}.yaml"
+    connection {
+      host     = self.default_ip_address
+      type     = "ssh"
+      user     = var.vm_user
+      password = var.vm_password
+    }
+  }
+
+  # Installs the required ansible galaxy collections then executes the playbook for provisioning
+  provisioner "remote-exec" {
+    inline = [
+      " cd /home/${var.vm_user}",
+      "ansible-galaxy install -r ansible/${var.vm_name}.yaml",
+      "ansible-playbook ${var.playbook} -c=local -i \"localhost,\" --become --extra-vars \"${var.ansible_vars}\" "
+    ]
+    connection {
+      host     = self.default_ip_address
+      type     = "ssh"
+      user     = var.vm_user
+      password = var.vm_password
     }
   }
 }

@@ -1,0 +1,45 @@
+---
+# Create a playbook for provisioning additional services
+# The following is only a snippit and is not complete
+
+- hosts: all
+  become: true
+  collections:
+    - nginxinc.nginx_core
+  roles:
+    - role: nginx
+    - role: nginx_config
+      vars:
+        nginx_config_http_template_enable: true
+        nginx_config_http_template:
+          app:
+            template_file: http/default.conf.j2
+            conf_file_name: default.conf
+            conf_file_location: /etc/nginx/conf.d/
+            servers:
+              main:
+                listen:
+                  listen_localhost:
+                    port: "{{ nginx_port }}"
+                server_name: localhost
+                access_log:
+                  - name: main
+                    location: /var/log/nginx/access.log
+                reverse_proxy:
+                  locations:
+                    main:
+                      location: /
+                      proxy_pass: http://upstr/
+                      proxy_set_header:
+                        header_host:
+                          name: Host
+                          value: $host
+            upstreams:
+              main:
+                name: upstr
+                lb_method: least_conn
+                servers:
+                  server_one:
+                    # The following are variables that can be passed as extra-vars at execution
+                    address: "{{ app_ip }}"
+                    port: "{{ app_port }}"
